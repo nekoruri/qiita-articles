@@ -1,0 +1,67 @@
+<p>組織の運用ポリシーの変更などによりメーリングリストのアーカイブを削除することになった場合など、複数のメーリングリストの設定変更が必要になることがありますが、Webの管理画面からいちいち各メーリングリストに対して行うのは困難です。</p>
+
+<p>このような場合に、Mailmanではwithlistコマンドが利用できます。</p>
+
+<p>まずは1つのメーリングリストを対象にして、設定変更ができることを確認します。バイナリ形式で保存されている現在の設定を、dumpdbコマンドで確認します。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre># cd /var/lib/mailman
+# bin/dumpdb -p lists/mlname/config.pck | grep archive
+    'archive': True,
+    'archive_private': 0,
+    'archive_volume_frequency': 1,
+</pre></div></div>
+
+<p>現在mlnameというメーリングリストではアーカイブが有効になっています。これを無効に変更します。</p>
+
+<p>準備として、設定変更の処理をPythonスクリプトで用意します。引数としてメーリングリストのオブジェクトが渡されるので、Lock()とSave()の間で設定変更を行います。</p>
+
+<div class="code-frame" data-lang="python">
+<div class="code-lang"><span class="bold">disable_archive.py</span></div>
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">disable_archive</span><span class="p">(</span><span class="n">mlist</span><span class="p">):</span>
+    <span class="n">mlist</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
+    <span class="n">mlist</span><span class="o">.</span><span class="n">archive</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">mlist</span><span class="o">.</span><span class="n">Save</span><span class="p">()</span>
+</pre></div>
+</div>
+
+<p>withlistコマンドでPythonスクリプトに書かれた処理を適用します。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre># withlist -r disable_archive mlname
+Importing disable_archive...
+Running disable_archive.disable_archive()...
+Loading list mlname (unlocked)
+Unlocking (but not saving) list: mlname
+Finalizing
+</pre></div></div>
+
+<p>これで設定変更ができました。念のため確認してみます。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre># bin/dumpdb -p lists/mlname/config.pck | grep archive
+    'archive': False,
+    'archive_private': 0,
+    'archive_volume_frequency': 1,
+</pre></div></div>
+
+<p>設定変更ができることが確認できたら、今度は全てのメーリングリストに対して適用するため、メーリングリスト名の代わりに「-a」オプションを利用します。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre># withlist -r disable_archive -a
+Importing disable_archive...
+Running disable_archive.disable_archive()...
+Loading list ml1 (unlocked)
+Loading list ml2 (unlocked)
+Loading list ml3 (unlocked)
+(省略)
+Loading list ml99 (unlocked)
+</pre></div></div>
+
+<p>これで全てのメーリングリストで設定変更が行われました。念のため、いくつか適当にサンプリングして設定が変更されていることを確認します。</p>
+
+<div class="code-frame" data-lang="text"><div class="highlight"><pre># bin/dumpdb -p lists/ml1/config.pck | grep archive
+    'archive': False,
+    'archive_private': 0,
+    'archive_volume_frequency': 1,
+</pre></div></div>
+
+<p>大丈夫のようです。</p>
+
+<p>Mailmanは通常はWebの管理画面から操作することが多いですが、コマンドラインでの操作ができると一気に運用が楽になります。</p>

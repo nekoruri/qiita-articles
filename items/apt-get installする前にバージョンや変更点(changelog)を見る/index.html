@@ -1,0 +1,89 @@
+
+<h1>
+<span id="インストールされるバージョンを見る" class="fragment"></span><a href="#%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB%E3%81%95%E3%82%8C%E3%82%8B%E3%83%90%E3%83%BC%E3%82%B8%E3%83%A7%E3%83%B3%E3%82%92%E8%A6%8B%E3%82%8B"><i class="fa fa-link"></i></a>インストールされるバージョンを見る</h1>
+
+<div class="code-frame" data-lang="console"><div class="highlight"><pre><span class="go">% apt-cache policy nginx
+nginx:
+  インストールされているバージョン: (なし)
+  候補:               1.1.19-1ubuntu0.6
+  バージョンテーブル:
+     1.1.19-1ubuntu0.6 0
+        500 http://jp.archive.ubuntu.com/ubuntu/ precise-updates/universe amd64 Packages
+     1.1.19-1ubuntu0.5 0
+        500 http://security.ubuntu.com/ubuntu/ precise-security/universe amd64 Packages
+     1.1.19-1 0
+        500 http://jp.archive.ubuntu.com/ubuntu/ precise/universe amd64 Packages
+</span></pre></div></div>
+
+<p>候補(Candidate)の行に書かれたパッケージが、今apt-get installしたときにインストールされるバージョン。</p>
+
+<h1>
+<span id="パッケージの更新履歴を見る" class="fragment"></span><a href="#%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8%E3%81%AE%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4%E3%82%92%E8%A6%8B%E3%82%8B"><i class="fa fa-link"></i></a>パッケージの更新履歴を見る</h1>
+
+<p>上記のCandidateのパッケージのchangelogを表示する。</p>
+
+<div class="code-frame" data-lang="console"><div class="highlight"><pre><span class="go">% apt-get changelog nginx
+</span><span class="gp">nginx (1.1.19-1ubuntu0.6) precise-proposed;</span><span class="w"> </span><span class="nv">urgency</span><span class="o">=</span>low
+<span class="go">
+  * Enable building of the http_stub_status_module in nginx-naxsi, which was
+    apparently not marked for compiling even though it's listed in the package
+</span><span class="gp">    description.  (LP: #</span>1170586<span class="o">)</span>
+<span class="go">
+</span><span class="gp"> -- Thomas Ward &lt;teward@ubuntu.com&gt;</span><span class="w">  </span>Fri, 31 Jan 2014 11:02:23 <span class="nt">-0500</span>
+<span class="go">
+</span><span class="gp">nginx (1.1.19-1ubuntu0.5) precise-security;</span><span class="w"> </span><span class="nv">urgency</span><span class="o">=</span>low
+<span class="go">
+</span><span class="gp">  * SECURITY UPDATE: ACL bypass via space character (LP: #</span>1253691<span class="o">)</span>
+<span class="go">    - debian/patches/cve-2013-4547.patch: modify src/http/ngx_http_parse.c
+      to account for a space character, fixing an issue which could result in
+      security restrictions being bypassed
+    - CVE-2013-4547
+
+</span><span class="gp"> -- Thomas Ward &lt;teward@ubuntu.com&gt;</span><span class="w">  </span>Thu, 21 Nov 2013 13:02:22 <span class="nt">-0500</span>
+<span class="go">(省略)
+</span></pre></div></div>
+
+<h1>
+<span id="パッケージの詳細を見る" class="fragment"></span><a href="#%E3%83%91%E3%83%83%E3%82%B1%E3%83%BC%E3%82%B8%E3%81%AE%E8%A9%B3%E7%B4%B0%E3%82%92%E8%A6%8B%E3%82%8B"><i class="fa fa-link"></i></a>パッケージの詳細を見る</h1>
+
+<p>なお、細かく Depends とか見たければ apt-cache show が使える。</p>
+
+<div class="code-frame" data-lang="console"><div class="highlight"><pre><span class="gp">% apt-cache show nginx                                                          &lt;18:10&gt;</span><span class="w">
+</span><span class="go">Package: nginx
+Priority: optional
+Section: universe/web
+Installed-Size: 85
+</span><span class="gp">Maintainer: Ubuntu Developers &lt;ubuntu-devel-discuss@lists.ubuntu.com&gt;</span><span class="w">
+</span><span class="gp">Original-Maintainer: Kartik Mistry &lt;kartik@debian.org&gt;</span><span class="w">
+</span><span class="go">Architecture: all
+Version: 1.1.19-1ubuntu0.6
+Depends: nginx-full | nginx-light
+Filename: pool/universe/n/nginx/nginx_1.1.19-1ubuntu0.6_all.deb
+Size: 5886
+MD5sum: de2fd98b4d0ed9d7cf2367fb94cdb958
+SHA1: d66ba022ca8e842754e5cfc718e96036bbaef8e6
+SHA256: b690e0b569023141a577200612e6b2880ddc795ad7051e648bcdc1da0a790701
+Description-en: small, but very powerful and efficient web server and mail proxy
+ Nginx (engine x) is a web server created by Igor Sysoev and kindly provided to
+ the open-source community. This server can be used as standalone HTTP server
+ and as a reverse proxy server before some Apache or another big server to
+ reduce load to backend servers by many concurrent HTTP-sessions.
+</span><span class="c"> .
+</span><span class="go"> This is a dummy package that selects nginx-full by default, but also can be
+ installed with nginx-light for upgrading to nginx-light directly.
+Homepage: http://nginx.net
+Description-md5: c71c42a7e7b75f4b7b417a4547f32b56
+Bugs: https://bugs.launchpad.net/ubuntu/+filebug
+Origin: Ubuntu
+
+Package: nginx
+Priority: optional
+Section: universe/web
+Installed-Size: 84
+</span><span class="gp">Maintainer: Ubuntu Developers &lt;ubuntu-devel-discuss@lists.ubuntu.com&gt;</span><span class="w">
+</span><span class="gp">Original-Maintainer: Kartik Mistry &lt;kartik@debian.org&gt;</span><span class="w">
+</span><span class="go">Architecture: all
+Version: 1.1.19-1ubuntu0.5
+Depends: nginx-full | nginx-light
+(省略)
+</span></pre></div></div>

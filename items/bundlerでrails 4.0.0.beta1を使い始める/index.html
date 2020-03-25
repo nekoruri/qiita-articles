@@ -1,0 +1,40 @@
+<p>Ruby環境にはbundlerが入った状態で：</p>
+
+<ul>
+<li>git init</li>
+<li>bundle init</li>
+<li>vim Gemfile</li>
+</ul>
+
+<div class="code-frame" data-lang="Gemfile"><div class="highlight"><pre>    source 'https://rubygems.org'
+    gem 'rails', '4.0.0.beta1'
+</pre></div></div>
+
+<ul>
+<li>bundle install --path vendor/bundle</li>
+<li>bundle exec rails new . -T 
+
+<ul>
+<li>-Tはrspecつかうため</li>
+<li>APP_PATHに . を指定すると、今居るディレクトリの名前がアプリケーションのクラス名に使われるので注意</li>
+<li>例: rails4 =&gt; Rails4::Application</li>
+<li>Gemfileの上書きを聞かれるのでy</li>
+</ul>
+</li>
+<li>.gitignoreにvendor/bundleを追加</li>
+</ul>
+
+<div class="code-frame" data-lang="gitignore"><div class="highlight"><pre>    /.bundle
+    /vendor/bundle
+
+    /db/*.sqlite3
+    /db/*.sqlite3-journal
+
+    /log/*.log
+    /tmp
+</pre></div></div>
+
+<ul>
+<li>git add .</li>
+<li>git commit -m 'new project'</li>
+</ul>

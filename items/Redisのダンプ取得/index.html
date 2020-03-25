@@ -1,0 +1,53 @@
+<p>多少古いデータでも構わなければ、redis.confで指定した頻度で dump.rdb が更新されているが、RedisのBGSAVEコマンドを実行し、LASTSAVEが更新されるのを待つ。 これでdump.rdbが最新の状態となる。</p>
+
+<ul>
+<li><a href="https://gist.github.com/nekoruri/6238957" class="autolink" rel="nofollow noopener" target="_blank">https://gist.github.com/nekoruri/6238957</a></li>
+</ul>
+
+<div class="code-frame" data-lang="bash">
+<div class="code-lang"><span class="bold">redis_bgsave.sh</span></div>
+<div class="highlight"><pre><span class="c">#!/bin/bash</span>
+
+<span class="c"># RedisのBGSAVEコマンドを実行し、redis.rdbが更新されるのを待つ。</span>
+<span class="c"># タイムアウト時間を超えたら exit status 1 で終了する。</span>
+
+<span class="nv">TIMEOUT</span><span class="o">=</span>30
+
+<span class="c"># Timeout handler</span>
+<span class="c"># http://stackoverflow.com/questions/1226094/how-to-include-a-timer-in-bash-scripting</span>
+set_timer<span class="o">()</span> <span class="o">{</span>
+        <span class="nb">trap </span>handle_timer ALRM
+        <span class="o">(</span><span class="nb">sleep</span> <span class="nv">$TIMEOUT</span><span class="p">;</span> <span class="nb">kill</span> <span class="nt">-ALRM</span> <span class="nv">$$</span><span class="o">)</span>&amp;
+        <span class="nv">timer_pid</span><span class="o">=</span><span class="nv">$!</span>
+<span class="o">}</span>
+
+unset_timer<span class="o">()</span> <span class="o">{</span>
+        <span class="nb">kill</span> <span class="nv">$timer_pid</span>
+        <span class="nb">trap</span> - ALRM
+<span class="o">}</span>
+
+handle_timer<span class="o">()</span> <span class="o">{</span>
+        <span class="nb">exit </span>1
+<span class="o">}</span>
+
+
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span>/bin:/usr/bin
+
+set_timer
+
+<span class="c"># 丁度この瞬間に組込のBGSAVEが走る可能性があるので、</span>
+<span class="c"># BGSAVEの前にLASTSAVEを取得</span>
+<span class="nv">LASTSAVE</span><span class="o">=</span><span class="sb">`</span>redis-cli LASTSAVE<span class="sb">`</span>
+
+redis-cli BGSAVE
+
+<span class="c"># LASTSAVEが変わるまで待つ。</span>
+<span class="k">while</span> <span class="o">[</span> <span class="nv">$LASTSAVE</span> <span class="o">==</span> <span class="sb">`</span>redis-cli LASTSAVE<span class="sb">`</span> <span class="o">]</span><span class="p">;</span> <span class="k">do
+        </span><span class="nb">sleep </span>1
+<span class="k">done
+
+</span>unset_timer
+</pre></div>
+</div>
+
+<p>あとは /var/lib/redis/dump.rdb (もしくはその他の場所) を好きにすれば良い。</p>

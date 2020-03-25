@@ -1,0 +1,29 @@
+<p><a href="http://qiita.com/items/101aaf8159cf1470d823">ActiveRecordをutf8mb4で動かす </a><br>
+のinitializerが、開発環境とかでsqlite3みたいにMySQL以外のDBエンジンを併用している場合に上書き先のメソッドが未定義で死ぬので、NameError だけとっ捕まえるようにした。</p>
+
+<p>ちなみに、SQLite3以外では未確認。問題無いとは思うけど。</p>
+
+<div class="code-frame" data-lang="ruby">
+<div class="code-lang"><span class="bold">config/initializers/ar_innodb_row_format.rb</span></div>
+<div class="highlight"><pre><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">on_load</span> <span class="ss">:active_record</span> <span class="k">do</span>
+  <span class="k">begin</span>
+    <span class="k">module</span> <span class="nn">ActiveRecord::ConnectionAdapters</span>
+
+      <span class="k">class</span> <span class="nc">AbstractMysqlAdapter</span> <span class="o">&lt;</span> <span class="no">AbstractAdapter</span>
+        <span class="k">def</span> <span class="nf">create_table_with_innodb_row_format</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="p">{})</span>
+          <span class="n">table_options</span> <span class="o">=</span> <span class="n">options</span><span class="p">.</span><span class="nf">reverse_merge</span><span class="p">(</span><span class="ss">:options</span> <span class="o">=&gt;</span> <span class="s1">'ENGINE=InnoDB ROW_FORMAT=DYNAMIC'</span><span class="p">)</span>
+          <span class="n">create_table_without_innodb_row_format</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">table_options</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">td</span><span class="o">|</span>
+            <span class="k">yield</span> <span class="n">td</span> <span class="k">if</span> <span class="nb">block_given?</span>
+          <span class="k">end</span>
+        <span class="k">end</span>
+        <span class="n">alias_method_chain</span> <span class="ss">:create_table</span><span class="p">,</span> <span class="ss">:innodb_row_format</span>
+      <span class="k">end</span>
+
+    <span class="k">end</span>
+  <span class="k">rescue</span> <span class="no">NameError</span> <span class="o">=&gt;</span> <span class="n">ex</span>
+    <span class="c1"># MySQLが使われていないので無視</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+</pre></div>
+</div>
